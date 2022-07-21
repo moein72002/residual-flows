@@ -252,7 +252,10 @@ def neumann_logdet_estimator(g, x, n_power_series, vareps, coeff_fn, training):
     with torch.no_grad():
         for k in range(1, n_power_series + 1):
             vjp = torch.autograd.grad(g, x, vjp, retain_graph=True)[0]
+            # vjp = torch.autograd.grad(g, x, vjp, retain_graph=True,
+            #                           create_graph=True)[0]
             neumann_vjp = neumann_vjp + (-1)**k * coeff_fn(k) * vjp
+    # vjp_jac = torch.autograd.grad(g, x, neumann_vjp, create_graph=True)[0]
     vjp_jac = torch.autograd.grad(g, x, neumann_vjp, create_graph=training)[0]
     logdetgrad = torch.sum(vjp_jac.view(x.shape[0], -1) * vareps.view(x.shape[0], -1), 1)
     return logdetgrad

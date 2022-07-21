@@ -19,7 +19,7 @@ import lib.utils as utils
 import lib.layers as layers
 import lib.layers.base as base_layers
 from lib.lr_scheduler import CosineAnnealingWarmRestarts
-
+torch.autograd.set_detect_anomaly(True)
 # Arguments
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -32,6 +32,10 @@ parser.add_argument(
         'imagenet32',
         'imagenet64',
     ]
+)
+parser.add_argument(
+    "--debug", type=eval, choices=[True, False], default=False,
+    help="debug mode"
 )
 parser.add_argument('--dataroot', type=str, default='data')
 parser.add_argument('--imagesize', type=int, default=32)
@@ -251,6 +255,28 @@ if args.data == 'cifar10':
         shuffle=False,
         num_workers=args.nworkers,
     )
+    if args.debug:
+        train_dataset = datasets.CIFAR10(args.dataroot, train=True,
+                             transform=transform_train)
+        test_dataset = datasets.CIFAR10(args.dataroot, train=False,
+                         transform=transform_test)
+        train_dataset.cifar10.data = train_dataset.cifar10.data[:12]
+        train_dataset.cifar10.targets = train_dataset.cifar10.targets[:12]
+        test_dataset.cifar10.data = test_dataset.cifar10.data[:12]
+        test_dataset.cifar10.targets = test_dataset.cifar10.targets[:12]
+
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset,
+            batch_size=args.batchsize,
+            shuffle=True,
+            num_workers=args.nworkers,
+        )
+        test_loader = torch.utils.data.DataLoader(
+            test_dataset,
+            batch_size=args.val_batchsize,
+            shuffle=False,
+            num_workers=args.nworkers,
+        )
 elif args.data == 'mnist':
     im_dim = 1
     init_layer = layers.LogitTransform(1e-6)
@@ -441,6 +467,21 @@ model = ResidualFlow(
     n_classes=n_classes,
     block_type=args.block,
 )
+
+
+import torch.nn as nn
+
+
+class Dummy(nn.Module):
+    def __init__(self, model):
+        super(Dummy, self).__init__()
+        self.model = model
+
+    def forward(self, x, logpx=None, inverse=False, classify=False):
+        return self.model(x, logpx, inverse, classify)
+
+
+model = Dummy(model)
 
 model.to(device)
 ema = utils.ExponentialMovingAverage(model)

@@ -77,6 +77,19 @@ Use the argument `--resume [checkpt.pth]` to evaluate or sample from the model.
 
 Each checkpoint contains two sets of parameters, one from training and one containing the exponential moving average (EMA) accumulated over the course of training. Scripts will automatically use the EMA parameters for evaluation and sampling.
 
+# Deep Hybrid Models for OOD
+Debug mode supported:
+```
+python train_img_dhm.py --data cifar10 --actnorm True --save experiments/cifar10 --batchsize 10 --dhm-lambda 0.06 --coeff 6 --idim 640 --optimizer sgd --debug True
+```
+
+Need to validate:
+```
+python train_img_dhm.py --data cifar10 --actnorm True --save experiments/cifar10 --batchsize 10 --dhm-lambda 0.06 --coeff 6 --idim 640 --optimizer sgd
+```
+
+
+
 ## BibTeX
 ```
 @inproceedings{chen2019residualflows,

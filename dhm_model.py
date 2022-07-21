@@ -4,6 +4,15 @@ import numpy as np
 import torch.nn as nn
 
 
+class Reshaper(nn.Module):
+    def __init__(self, image_shape):
+        super(Reshaper, self).__init__()
+        self.image_shape = image_shape
+
+    def forward(self, x):
+        return x.view(-1, *self.image_shape)
+
+
 class DHM(nn.Module):
     def __init__(self, feature_extractor, normalizing_flow, n_classes, nf_input_size):
         super().__init__()
@@ -19,13 +28,15 @@ class DHM(nn.Module):
         hidden dimensions of 256 (the first 6 blocks) and 128 (the next 4 
         blocks) [20]."""
         self.nf_input_size = nf_input_size
+        self.reshaper = Reshaper(self.nf_input_size[1:])
         self.normalizing_flow = normalizing_flow
         self.fully_connected = nn.Linear(640, n_classes)
 
-    def forward(self, x):
+    def forward(self, x, logpx=None, inverse=False, classify=False):
         h_features = self.feature_extractor(x)
-        z_features = self.normalizing_flow(h_features.reshape(
-            [x.shape[0]] + list(self.nf_input_size[1:])), 0)
+        h_features_reshaped = self.reshaper(h_features)
+        z_features = self.normalizing_flow(h_features_reshaped, logpx,
+                                           inverse, classify)
         logits = self.fully_connected(h_features)
         return z_features, logits
 

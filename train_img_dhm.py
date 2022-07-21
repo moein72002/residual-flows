@@ -19,6 +19,7 @@ import lib.utils as utils
 import lib.layers as layers
 import lib.layers.base as base_layers
 from lib.lr_scheduler import CosineAnnealingWarmRestarts
+torch.autograd.set_detect_anomaly(True)
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -97,7 +98,7 @@ parser.add_argument('--nepochs', help='Number of epochs for training', type=int,
 parser.add_argument('--batchsize', help='Minibatch size', type=int, default=64)
 # parser.add_argument('--lr', help='Learning rate', type=float, default=1e-3)
 # parser.add_argument('--wd', help='Weight decay', type=float, default=0)
-parser.add_argument('--lr', help='Learning rate', type=float, default=1e-1)
+parser.add_argument('--lr', help='Learning rate', type=float, default=0.05)
 parser.add_argument('--wd', help='Weight decay', type=float, default=5e-4)
 parser.add_argument('--warmup-iters', type=int, default=1000)
 parser.add_argument('--annealing-iters', type=int, default=0)
@@ -260,7 +261,8 @@ if args.data == 'cifar10':
             transforms.ToTensor(),
             add_noise,
         ])
-        init_layer = layers.LogitTransform(0.05)
+        # init_layer = layers.LogitTransform(0.05)
+        init_layer = layers.ZeroMeanTransform()
 
     train_loader = torch.utils.data.DataLoader(
         datasets.CIFAR10(args.dataroot, train=True, transform=transform_train),
@@ -491,14 +493,24 @@ feature_extractor = WideResNet(
         coeff=args.wrn_spectral_norm_coeff,
         n_power_iterations=args.n_power_iterations,
     )
+
+from dhm_model import Reshaper
+from torch.nn import Linear
+
+normalizing_flow = residual_flow_model
+classifier = Linear(640, 10)
+
+
 model = DHM(feature_extractor=feature_extractor,
             normalizing_flow=residual_flow_model,
             n_classes=n_classes,
             nf_input_size=input_size)
 
-
+# feature_extractor.to(device)
+# normalizing_flow.to(device)
+# classifier.to(device)
 model.to(device)
-ema = utils.ExponentialMovingAverage(model)
+ema = utils.ExponentialMovingAverage(model.normalizing_flow)
 
 
 def parallelize(model):
@@ -527,6 +539,8 @@ elif args.optimizer == 'adamax':
 elif args.optimizer == 'rmsprop':
     optimizer = optim.RMSprop(model.parameters(), lr=args.lr, weight_decay=args.wd)
 elif args.optimizer == 'sgd':
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9,
+    #                             weight_decay=args.wd,)
     optimizer = torch.optim.SGD([
         {'params': model.feature_extractor.parameters()},
         {'params': model.normalizing_flow.parameters(),
@@ -590,7 +604,7 @@ def compute_loss(x, model, beta=1.0):
     if args.squeeze_first:
         x = squeeze_layer(x)
 
-    (z, delta_logp), logits = model(x)
+    (z, delta_logp), logits = model(x, 0)
 
     # log p(z)
     logpz = standard_normal_logprob(z).view(z.size(0), -1).sum(1, keepdim=True)
@@ -753,8 +767,11 @@ def validate(epoch, model, ema=None):
     if ema is not None:
         ema.swap()
 
-    update_lipschitz(model)
+    update_lipschitz(model.normalizing_flow)
 
+    # model.feature_extractor.eval()
+    # model.normalizing_flow.eval()
+    # model.fully_connected.eval()
     model = parallelize(model)
     model.eval()
 
@@ -837,8 +854,8 @@ def main():
         logger.info('Current LR {}'.format(optimizer.param_groups[0]['lr']))
 
         train(epoch, model)
-        lipschitz_constants.append(get_lipschitz_constants(model))
-        ords.append(get_ords(model))
+        lipschitz_constants.append(get_lipschitz_constants(model.normalizing_flow))
+        ords.append(get_ords(model.normalizing_flow))
         logger.info('Lipsh: {}'.format(pretty_repr(lipschitz_constants[-1])))
         logger.info('Order: {}'.format(pretty_repr(ords[-1])))
 
