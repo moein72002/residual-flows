@@ -2,3 +2,5 @@
 *__pycache__*
 data/*
 pretrained_models
+.idea/
+experiments/

@@ -1,4 +1,5 @@
-from torch._six import container_abcs
+# m torch._six import container_abcs
+import collections.abc as container_abcs
 from itertools import repeat
 import math
 import torch
@@ -491,3 +492,4 @@ if __name__ == '__main__':
     #         m.scale,
     #     )
     # )
+
