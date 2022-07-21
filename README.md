@@ -85,7 +85,7 @@ python train_img_dhm.py --data cifar10 --actnorm True --save experiments/cifar10
 
 Need to validate:
 ```
-python train_img_dhm.py --data cifar10 --actnorm True --save experiments/cifar10 --batchsize 10 --dhm-lambda 0.06 --coeff 6 --idim 640 --optimizer sgd
+python train_img_dhm.py --data cifar10 --actnorm True --save experiments/cifar10 --batchsize 64 --dhm-lambda 0.06 --coeff 6 --idim 640 --optimizer sgd
 ```
 
 
