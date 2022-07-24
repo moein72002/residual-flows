@@ -147,7 +147,6 @@ dependencies:
     - asttokens==2.0.5
     - backcall==0.2.0
     - decorator==5.1.1
-    - due==1.0
     - executing==0.8.3
     - ipdb==0.13.9
     - ipython==8.4.0
@@ -166,4 +165,4 @@ dependencies:
     - toml==0.10.2
     - traitlets==5.3.0
     - wcwidth==0.2.5
-prefix: /home/uriel/anaconda3/envs/due
+prefix: /opt/conda/envs/due
