@@ -501,7 +501,7 @@ from torch.nn import Linear
 normalizing_flow = residual_flow_model
 classifier = Linear(640, 10)
 
-import ipdb; ipdb.set_trace()
+
 model = DHM(feature_extractor=feature_extractor,
             normalizing_flow=residual_flow_model,
             n_classes=n_classes,
