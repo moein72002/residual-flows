@@ -262,6 +262,7 @@ if args.data == 'cifar10':
             add_noise,
         ])
         # init_layer = layers.LogitTransform(0.05)
+        # init_layer = layers.Logit(0.05)
         init_layer = layers.ZeroMeanTransform()
 
     train_loader = torch.utils.data.DataLoader(
@@ -449,7 +450,7 @@ if args.squeeze_first:
 input_size = (args.batchsize, 1, 32, 20)
 residual_flow_model = ResidualFlow(
     input_size,
-    n_blocks=list(map(int, args.nblocks.split('-'))),
+    n_blocks=list(map(int, args.nblocks.split('-'))),  # need to set to 6
     intermediate_dim=args.idim,
     factor_out=args.factor_out,
     quadratic=args.quadratic,
@@ -470,7 +471,7 @@ residual_flow_model = ResidualFlow(
     kernels=args.kernels,
     activation_fn=args.act,
     fc_end=args.fc_end,
-    fc_idim=args.fc_idim,
+    fc_idim=args.fc_idim,  # set to 640
     n_exact_terms=args.n_exact_terms,
     preact=args.preact,
     neumann_grad=args.neumann_grad,
@@ -500,7 +501,7 @@ from torch.nn import Linear
 normalizing_flow = residual_flow_model
 classifier = Linear(640, 10)
 
-
+import ipdb; ipdb.set_trace()
 model = DHM(feature_extractor=feature_extractor,
             normalizing_flow=residual_flow_model,
             n_classes=n_classes,

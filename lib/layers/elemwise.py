@@ -2,6 +2,9 @@ import math
 import torch
 import torch.nn as nn
 
+import torch.nn.functional as F
+
+
 _DEFAULT_ALPHA = 1e-6
 
 
@@ -86,3 +89,45 @@ class LogitTransform(nn.Module):
 
     def __repr__(self):
         return ('{name}({alpha})'.format(name=self.__class__.__name__, **self.__dict__))
+
+
+# class RealNVPLogitTransform(nn.Module):
+#     """
+#     The proprocessing step used in Real NVP:
+#     y = sigmoid(x) - a / (1 - 2a)
+#     x = logit(a + (1 - 2a)*y)
+#     """
+#
+#     def __init__(self, alpha=_DEFAULT_ALPHA):
+#         nn.Module.__init__(self)
+#         self.alpha = alpha
+#
+#     def forward(self, x, logpx=None):
+#         y = (x * 255. + torch.rand_like(x)) / 256.
+#         y = (2 * y - 1) * self.alpha
+#         y = (y + 1) / 2
+#         y = y.log() - (1. - y).log()
+#         if logpx is None:
+#             return y
+#
+#         # Save log-determinant of Jacobian of initial transform
+#         ldj = F.softplus(y) + F.softplus(-y) \
+#               - F.softplus(
+#             (1. - self.data_constraint).log() - self.data_constraint.log())
+#         sldj = ldj.view(ldj.size(0), -1).sum(-1)
+#
+#         return y, sldj
+#
+#     def inverse(self, y, logpy=None):
+#         x = (torch.sigmoid(y) - self.alpha) / (1 - 2 * self.alpha)
+#         if logpy is None:
+#             return x
+#         return x, logpy + self._logdetgrad(x).view(x.size(0), -1).sum(1, keepdim=True)
+#
+#     def _logdetgrad(self, x):
+#         s = self.alpha + (1 - 2 * self.alpha) * x
+#         logdetgrad = -torch.log(s - s * s) + math.log(1 - 2 * self.alpha)
+#         return logdetgrad
+#
+#     def __repr__(self):
+#         return ('{name}({alpha})'.format(name=self.__class__.__name__, **self.__dict__))
