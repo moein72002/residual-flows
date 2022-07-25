@@ -705,8 +705,7 @@ def train(epoch, model):
 
 
         # compute gradient and do SGD step
-        bpd = bpd * (args.imagesize * args.imagesize * im_dim)
-
+        # bpd = bpd * (args.imagesize * args.imagesize * im_dim)
         loss = bpd * args.dhm_lambda + crossent / np.log(
             2)  # Change cross entropy from nats to bits.
         loss.backward()
