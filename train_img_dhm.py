@@ -263,7 +263,9 @@ if args.data == 'cifar10':
         ])
         # init_layer = layers.LogitTransform(0.05)
         # init_layer = layers.Logit(0.05)
-        init_layer = layers.ZeroMeanTransform()
+        # init_layer = layers.ZeroMeanTransform()
+        init_layer = layers.Normalize((0.4914, 0.4822, 0.4465),
+                                      (0.2023, 0.1994, 0.2010))
 
     train_loader = torch.utils.data.DataLoader(
         datasets.CIFAR10(args.dataroot, train=True, transform=transform_train),
