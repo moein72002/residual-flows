@@ -867,7 +867,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
     if ema is not None:
         ema.swap()
 
-    print(f"ood_bpd_meter: {ood_bpd_meter}")
+    print(f"ood_bpd_meter: {ood_bpd_meter.avg:.4f}")
     s = 'Epoch: [{0}]\tTime {1:.2f} | Test bits/dim {bpd_meter.avg:.4f}'.format(epoch, val_time, bpd_meter=bpd_meter)
     s += ' | CE {:.4f} | Acc {:.2f}'.format(ce_meter.avg, 100 * correct / total)
     logger.info(s)
