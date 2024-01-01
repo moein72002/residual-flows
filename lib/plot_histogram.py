@@ -29,8 +29,9 @@ def plot_in_out_histogram(hist_name, id_list_name, id_list, out_list_name, out_l
     # Show the plot
     save_file_name = f"./prob_results/probability_chart_in_epoch_{epoch}_auc_{auc * 100}.png"
     plt.savefig(save_file_name)
-    plt.show()
+    plt.clf()
     print(f"finish plot_in_out_histogram in epoch {epoch}")
 
+# plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) - 0.5, 0)
 # plot_in_out_histogram("ood", "cifar10", np.random.rand(200), "cifar100", np.random.rand(200) - 0.5, 0)
 
