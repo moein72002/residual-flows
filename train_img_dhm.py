@@ -638,9 +638,6 @@ def compute_loss(x, model, beta=1.0, testing_ood=False):
     
     if testing_ood:
         logpz = logpz.detach().cpu().numpy()
-        print(logpx)
-        print(type(logpx))
-        print(logpx.size())
         delta_logp = torch.mean(-delta_logp).detach()
         return bits_per_dim, logits, logpz, delta_logp
 
@@ -834,6 +831,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
             x = x.to(device)
             bpd, logits, logpz, _ = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
+            print(f"train logpz: {logpz}")
             id_logpz_list.append(logpz)
             bpd_meter.update(bpd.item(), x.size(0))
 
@@ -854,6 +852,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
             x = x.to(device)
             bpd, _, logpz, _ = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
+            print(f"ood test logpz: {logpz}")
             ood_logpz_list.append(logpz)
             ood_bpd_meter.update(bpd.item(), x.size(0))
 
