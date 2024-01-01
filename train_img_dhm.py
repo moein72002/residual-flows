@@ -678,6 +678,7 @@ def compute_p_grads(model):
 
 batch_time = utils.RunningAverageMeter(0.97)
 bpd_meter = utils.RunningAverageMeter(0.97)
+ood_bpd_meter = utils.RunningAverageMeter(0.97)
 logpz_meter = utils.RunningAverageMeter(0.97)
 deltalogp_meter = utils.RunningAverageMeter(0.97)
 firmom_meter = utils.RunningAverageMeter(0.97)
@@ -808,6 +809,7 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
     Evaluates the cross entropy between p_data and p_model.
     """
     bpd_meter = utils.AverageMeter()
+    ood_bpd_meter = utils.AverageMeter()
     ce_meter = utils.AverageMeter()
 
     if ema is not None:
@@ -850,9 +852,10 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
     with torch.no_grad():
         for i, (x, y) in enumerate(tqdm(ood_test_loader)):
             x = x.to(device)
-            _, _, logpz, _ = compute_loss(x, model, testing_ood=True)
+            bpd, _, logpz, _ = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
             ood_logpz_list.append(logpz)
+            ood_bpd_meter.update(bpd.item(), x.size(0))
 
     ood_logpz_list = np.concatenate(ood_logpz_list, axis=0)
     # print(f"ood_logpz_list: {ood_logpz_list}")
@@ -863,6 +866,8 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
 
     if ema is not None:
         ema.swap()
+
+    print(f"ood_bpd_meter: {ood_bpd_meter}")
     s = 'Epoch: [{0}]\tTime {1:.2f} | Test bits/dim {bpd_meter.avg:.4f}'.format(epoch, val_time, bpd_meter=bpd_meter)
     s += ' | CE {:.4f} | Acc {:.2f}'.format(ce_meter.avg, 100 * correct / total)
     logger.info(s)
