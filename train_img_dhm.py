@@ -639,13 +639,14 @@ def compute_loss(x, model, beta=1.0, testing_ood=False):
     
     if testing_ood:
         logpz = logpz.detach().cpu().numpy()
+        print(f"logpz: {logpz}")
         delta_logp = torch.mean(-delta_logp).detach()
         return bits_per_dim, logits, logpz, delta_logp
 
     logpz = torch.mean(logpz).detach()
     delta_logp = torch.mean(-delta_logp).detach()
 
-
+    print(f"logpz: {logpz}")
     return bits_per_dim, logits, logpz, delta_logp
 
 
