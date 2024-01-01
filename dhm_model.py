@@ -34,7 +34,9 @@ class DHM(nn.Module):
 
     def forward(self, x, logpx=None, inverse=False, classify=False):
         h_features = self.feature_extractor(x)
+        print(f"h_features.size(): {h_features.size()}")
         h_features_reshaped = self.reshaper(h_features)
+        print(f"h_features_reshaped.size(): {h_features_reshaped.size()}")
         z_features = self.normalizing_flow(h_features_reshaped, logpx,
                                            inverse, classify)
         logits = self.fully_connected(h_features)
