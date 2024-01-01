@@ -507,7 +507,7 @@ feature_extractor = WideResNet(
         spectral_conv=True,
         spectral_bn=True,
         dropout_rate=0.3,
-        coeff=args.coeff,
+        coeff=args.wrn_spectral_norm_coeff,
         n_power_iterations=args.n_power_iterations,
     )
 
@@ -567,7 +567,6 @@ elif args.optimizer == 'sgd':
         lr=args.lr,
         momentum=0.9,
         weight_decay=args.wd,
-        nesterov=True,
     )
     if args.scheduler:
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
