@@ -829,7 +829,8 @@ def validate(epoch, model, ema=None, ood_test_loader=None):
 
     id_logpz_list = []
     with torch.no_grad():
-        for i, (x, y) in enumerate(tqdm(test_loader)):
+        #TODO: change below
+        for i, (x, y) in enumerate(tqdm(train_loader)):
             x = x.to(device)
             bpd, logits, logpz, _ = compute_loss(x, model, testing_ood=True)
             logpz = np.concatenate(logpz, axis=0)
